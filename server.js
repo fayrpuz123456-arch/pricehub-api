@@ -11,10 +11,10 @@ app.use(express.json());
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', 
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseio.com https://*.googleapis.com; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' https: https://*.firebaseio.com https://*.googleapis.com; " +
+        "connect-src 'self' https: https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; " +
         "font-src 'self' data:;"
     );
     next();
