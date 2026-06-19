@@ -11,10 +11,10 @@ app.use(express.json());
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy', 
         "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseio.com https://*.googleapis.com; " +
         "style-src 'self' 'unsafe-inline'; " +
         "img-src 'self' data: https:; " +
-        "connect-src 'self' https:; " +
+        "connect-src 'self' https: https://*.firebaseio.com https://*.googleapis.com; " +
         "font-src 'self' data:;"
     );
     next();
@@ -23,9 +23,9 @@ app.use((req, res, next) => {
 // ─── Serve static files ────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "public")));
 
-// ─── Serve admin.html as default ──────────────────────────────
+// ─── Serve login.html as default ──────────────────────────────
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "admin.html"));
+    res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
 // ─────────────────────────────────────────────

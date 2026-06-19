@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة تحكم PriceHub</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -413,7 +418,33 @@
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
-    <!-- ✅ السكريبت دلوقتي محلي بدل ما يتجاب من GitHub raw -->
-    <script src="/admin.js"></script>
+    <!-- ✅ السكريبت محلي من نفس السيرفر -->
+    <script src="admin.js"></script>
+    
+    <!-- ✅ Firebase Authentication Check -->
+    <script>
+        // ─── Firebase Config ──────────────────────────────────────────
+        const firebaseConfig = {
+            apiKey: 'AIzaSyCZU6HcskSYb9NnChMX0g8xmgnl4s1GER8',
+            appId: '1:82538963252:web:5f2a54cc8236e3a7094561',
+            messagingSenderId: '82538963252',
+            projectId: 'pricehub-app-2026',
+            authDomain: 'pricehub-app-2026.firebaseapp.com',
+            storageBucket: 'pricehub-app-2026.firebasestorage.app',
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // ─── Check Authentication ────────────────────────────────────
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                // ❌ مش مسجل دخول → يروح لـ login
+                window.location.href = '/login.html';
+            } else {
+                console.log('✅ Authenticated as:', user.email);
+            }
+        });
+    </script>
 </body>
 </html>
