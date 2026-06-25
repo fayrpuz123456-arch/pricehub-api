@@ -23,13 +23,13 @@ app.use(cors({
 
 app.use(express.json());
 
-// ─── CSP Headers (يسمح بـ Firebase scripts و connections) ───────
+// ─── CSP Headers ─────────────────────────────────────────────────
 app.use((req, res, next) => {
     res.setHeader('Content-Security-Policy',
         "default-src 'self'; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com https://*.firebaseio.com; " +
         "style-src 'self' 'unsafe-inline'; " +
-        "img-src 'self' data: https:; " +
+        "img-src 'self' data: https: *; " +
         "connect-src 'self' https: wss://*.firebaseio.com https://*.googleapis.com; " +
         "font-src 'self' data:; " +
         "frame-src 'self' https://*.firebaseapp.com;"
@@ -736,18 +736,11 @@ app.get("/products/:id", async (req, res) => {
 // POST /products
 app.post("/products", async (req, res) => {
     try {
-        // ✅ تأكد من الـ id
         const productData = { ...req.body };
-        
-        // ✅ لو الـ id موجود، حوله لـ String
-        if (productData.id) {
-            productData.id = String(productData.id);
-        }
-        
-        // ✅ لو الـ id مش موجود، اعمل واحد
-        if (!productData.id) {
-            productData.id = Date.now().toString();
-        }
+
+        // ✅ احذف أي id جاي من الـ frontend عشان MongoDB يعمله تلقائي
+        delete productData.id;
+        delete productData._id;
 
         const product = new Product(productData);
         await product.save();
@@ -761,9 +754,15 @@ app.post("/products", async (req, res) => {
 // PUT /products/:id
 app.put("/products/:id", async (req, res) => {
     try {
+        const updateData = { ...req.body };
+
+        // ✅ امنع تغيير الـ _id
+        delete updateData._id;
+        delete updateData.id;
+
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            updateData,
             { new: true, runValidators: true }
         );
         if (!product) {
