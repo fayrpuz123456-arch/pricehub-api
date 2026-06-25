@@ -39,25 +39,20 @@ function showToast(message, type = 'success') {
 
 // ─── Load Products ─────────────────────────────────────────
 async function loadProducts() {
-    // ✅ منع التحميل المتكرر
     if (isLoadingProducts) return;
     isLoadingProducts = true;
 
     try {
-        // ✅ منع الـ Cache عشان يجيب أحدث البيانات
         const res = await fetch(`${API_URL}/products`, {
             cache: 'no-cache',
-            headers: {
-                'Cache-Control': 'no-cache'
-            }
+            headers: { 'Cache-Control': 'no-cache' }
         });
         const data = await res.json();
         products = data.data || [];
-        
-        // ✅ تحديث الإحصائيات والجدول
+
         renderStats(data.total);
         renderTable(products);
-        
+
         document.getElementById('apiStatus').textContent = '🟢 API متصل';
     } catch (error) {
         console.error('Error loading products:', error);
@@ -83,7 +78,7 @@ function renderStats(totalFromApi) {
     document.getElementById('productCount').textContent = `${total} منتج`;
 }
 
-// ─── Render Table (محسّن بدون اهتزاز) ─────────────────────
+// ─── Render Table ───────────────────────────────────────────
 function renderTable(data) {
     const container = document.getElementById('productsTable');
 
@@ -92,11 +87,9 @@ function renderTable(data) {
         return;
     }
 
-    // ✅ استخدم DocumentFragment عشان التحديث يكون سلس
     const fragment = document.createDocumentFragment();
     const table = document.createElement('table');
-    
-    // ─── Header ──────────────────────────────────────────────
+
     const thead = document.createElement('thead');
     thead.innerHTML = `
         <tr>
@@ -110,16 +103,17 @@ function renderTable(data) {
         </tr>
     `;
     table.appendChild(thead);
-    
-    // ─── Body ────────────────────────────────────────────────
+
     const tbody = document.createElement('tbody');
-    
+
     data.forEach(p => {
+        // ✅ استخدم _id دائماً (MongoDB ObjectId)
+        const productId = p._id;
         const isInStock = p.stock > 0;
         const discountText = p.discountPercentage ? `${p.discountPercentage}%` : '-';
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><img src="${p.image || 'https://via.placeholder.com/40'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/40'"></td>
+            <td><img src="${p.image || 'https://via.placeholder.com/40'}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/40'" crossorigin="anonymous"></td>
             <td class="product-name">${p.name}</td>
             <td>${p.storeName || '-'}</td>
             <td>${p.price} EGP</td>
@@ -131,18 +125,17 @@ function renderTable(data) {
             </td>
             <td>
                 <div class="actions">
-                    <button class="btn btn-primary btn-sm" onclick="editProduct(${p.id})">✏️ تعديل</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
+                    <button class="btn btn-primary btn-sm" onclick="editProduct('${productId}')">✏️ تعديل</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteProduct('${productId}')">🗑️ حذف</button>
                 </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
-    
+
     table.appendChild(tbody);
     fragment.appendChild(table);
-    
-    // ✅ استبدال المحتوى مرة واحدة فقط
+
     container.innerHTML = '';
     container.appendChild(fragment);
 }
@@ -191,7 +184,8 @@ form.addEventListener('submit', async (e) => {
         let res;
 
         if (isEditing) {
-            const id = parseInt(editId.value);
+            // ✅ استخدم الـ _id المخزن في editId (ObjectId صحيح)
+            const id = editId.value;
             res = await fetch(`${API_URL}/products/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -201,13 +195,13 @@ form.addEventListener('submit', async (e) => {
             if (res.ok) {
                 showToast('✅ تم تحديث المنتج بنجاح!', 'success');
                 resetForm();
-                await loadProducts(); // ✅ Force reload مع await
+                await loadProducts();
             } else {
                 const err = await res.json();
                 showToast(`❌ فشل التحديث: ${err.error}`, 'error');
             }
         } else {
-            productData.id = Date.now();
+            // ✅ لا تبعت id إطلاقاً — MongoDB يعمله تلقائي
             res = await fetch(`${API_URL}/products`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -217,7 +211,7 @@ form.addEventListener('submit', async (e) => {
             if (res.ok) {
                 showToast('✅ تم إضافة المنتج بنجاح!', 'success');
                 resetForm();
-                await loadProducts(); // ✅ Force reload مع await
+                await loadProducts();
             } else {
                 const err = await res.json();
                 showToast(`❌ فشل الإضافة: ${err.error}`, 'error');
@@ -230,11 +224,16 @@ form.addEventListener('submit', async (e) => {
 
 // ─── Edit Product ──────────────────────────────────────────
 function editProduct(id) {
-    const product = products.find(p => p.id === id);
-    if (!product) return;
+    // ✅ ابحث بـ _id مش id
+    const product = products.find(p => p._id === id);
+    if (!product) {
+        showToast('❌ لم يتم العثور على المنتج', 'error');
+        return;
+    }
 
     isEditing = true;
-    editId.value = product.id;
+    // ✅ احفظ الـ _id (ObjectId) في الـ hidden input
+    editId.value = product._id;
     name.value = product.name;
     price.value = product.price;
     oldPrice.value = product.oldPrice || '';
@@ -278,7 +277,7 @@ async function deleteProduct(id) {
 
         if (res.ok) {
             showToast('🗑️ تم حذف المنتج', 'info');
-            await loadProducts(); // ✅ Force reload مع await
+            await loadProducts();
         } else {
             const err = await res.json();
             showToast(`❌ فشل الحذف: ${err.error}`, 'error');
@@ -291,5 +290,5 @@ async function deleteProduct(id) {
 // ─── Init ───────────────────────────────────────────────────
 loadProducts();
 
-// ─── Auto-refresh every 60 seconds (أقل اهتزاز) ──────────
+// ─── Auto-refresh every 60 seconds ────────────────────────
 setInterval(loadProducts, 60000);
