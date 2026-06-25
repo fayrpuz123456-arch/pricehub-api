@@ -736,10 +736,24 @@ app.get("/products/:id", async (req, res) => {
 // POST /products
 app.post("/products", async (req, res) => {
     try {
-        const product = new Product(req.body);
+        // ✅ تأكد من الـ id
+        const productData = { ...req.body };
+        
+        // ✅ لو الـ id موجود، حوله لـ String
+        if (productData.id) {
+            productData.id = String(productData.id);
+        }
+        
+        // ✅ لو الـ id مش موجود، اعمل واحد
+        if (!productData.id) {
+            productData.id = Date.now().toString();
+        }
+
+        const product = new Product(productData);
         await product.save();
         res.status(201).json({ message: "Product added successfully", data: product });
     } catch (error) {
+        console.error('❌ Error adding product:', error);
         res.status(500).json({ error: error.message });
     }
 });
