@@ -122,11 +122,14 @@ function renderTable(data) {
 
         // ── الصورة
         const imgTd = document.createElement('td');
+        const FALLBACK_IMG = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23e0e0e0' rx='8'/%3E%3Ctext x='50%25' y='55%25' font-size='18' text-anchor='middle' dominant-baseline='middle' fill='%23999'%3E%F0%9F%93%A6%3C/text%3E%3C/svg%3E`;
         const imgEl = document.createElement('img');
-        imgEl.src = p.image || 'https://via.placeholder.com/40';
+        imgEl.src = p.image || FALLBACK_IMG;
         imgEl.alt = p.name;
-        imgEl.crossOrigin = 'anonymous';
-        imgEl.onerror = function () { this.src = 'https://via.placeholder.com/40'; };
+        imgEl.onerror = function () {
+            this.onerror = null;
+            this.src = FALLBACK_IMG;
+        };
         imgTd.appendChild(imgEl);
 
         // ── اسم المنتج
