@@ -1,5 +1,5 @@
 // ─── API URL ──────────────────────────────────────────────
-const API_URL = 'https://pricehub-api-production.up.railway.app';
+const API_URL = 'https://pricehub-api-production-f67e.up.railway.app';
 
 // ─── State ──────────────────────────────────────────────────
 let products = [];
