@@ -342,16 +342,38 @@
                     </div>
                     <div class="form-group">
                         <label>السعر (EGP) *</label>
-                        <input type="number" id="price" placeholder="مثال: 59999" required>
+                        <input type="number" step="0.01" id="price" placeholder="مثال: 59999.50" required>
                     </div>
                     <div class="form-group">
                         <label>السعر القديم (اختياري)</label>
-                        <input type="number" id="oldPrice" placeholder="مثال: 64999">
+                        <input type="number" step="0.01" id="oldPrice" placeholder="مثال: 64999.00">
                     </div>
                     <div class="form-group">
                         <label>نسبة الخصم % (اختياري)</label>
-                        <input type="number" id="discount" placeholder="مثال: 7.7">
+                        <input type="number" step="0.01" id="discount" placeholder="مثال: 7.7">
                     </div>
+                    
+                    <!-- ✅ حقل وحدة القياس (جديد) -->
+                    <div class="form-group">
+                        <label>وحدة القياس *</label>
+                        <select id="unit">
+                            <option value="قطعة">قطعة</option>
+                            <option value="كجم">كجم</option>
+                            <option value="جرام">جرام</option>
+                            <option value="لتر">لتر</option>
+                            <option value="مل">مل</option>
+                            <option value="متر">متر</option>
+                            <option value="سم">سم</option>
+                            <option value="حبة">حبة</option>
+                            <option value="علبة">علبة</option>
+                            <option value="زجاجة">زجاجة</option>
+                            <option value="كيس">كيس</option>
+                            <option value="صندوق">صندوق</option>
+                            <option value="طقم">طقم</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                    
                     <div class="form-group">
                         <label>التصنيف *</label>
                         <select id="category">
@@ -373,12 +395,19 @@
                     </div>
                     <div class="form-group">
                         <label>الكمية *</label>
-                        <input type="number" id="stock" placeholder="مثال: 45" required>
+                        <input type="number" step="0.01" id="stock" placeholder="مثال: 45.5" required>
                     </div>
                     <div class="form-group">
                         <label>رابط الصورة *</label>
                         <input type="url" id="image" placeholder="https://example.com/image.jpg" required>
                     </div>
+                    
+                    <!-- ✅ حقل الرابط الخارجي (جديد) -->
+                    <div class="form-group" style="grid-column: span 1;">
+                        <label>رابط المنتج (اختياري)</label>
+                        <input type="url" id="externalLink" placeholder="https://example.com/product-page">
+                    </div>
+                    
                     <div class="form-group" style="grid-column: span 1;">
                         <label>الوصف *</label>
                         <textarea id="description" placeholder="وصف المنتج..." required></textarea>
@@ -424,16 +453,15 @@
     <!-- ✅ Firebase Authentication Check -->
     <script>
         // ─── Firebase Config ──────────────────────────────────────────
-      // ─── Firebase Config ──────────────────────────────────────────
-const firebaseConfig = {
-    apiKey: "AIzaSyANjFs3-t3ij9GgjH1PCHOhpIQ6W9lm7QQ",
-    authDomain: "pricehub-admin.firebaseapp.com",
-    databaseURL: "https://pricehub-admin-default-rtdb.firebaseio.com",
-    projectId: "pricehub-admin",
-    storageBucket: "pricehub-admin.firebasestorage.app",
-    messagingSenderId: "150299904907",
-    appId: "1:150299904907:web:f4d38657"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyANjFs3-t3ij9GgjH1PCHOhpIQ6W9lm7QQ",
+            authDomain: "pricehub-admin.firebaseapp.com",
+            databaseURL: "https://pricehub-admin-default-rtdb.firebaseio.com",
+            projectId: "pricehub-admin",
+            storageBucket: "pricehub-admin.firebasestorage.app",
+            messagingSenderId: "150299904907",
+            appId: "1:150299904907:web:f4d38657"
+        };
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();

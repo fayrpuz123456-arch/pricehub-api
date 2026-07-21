@@ -21,6 +21,11 @@ const description = document.getElementById('description');
 const whatsapp = document.getElementById('whatsapp');
 const facebook = document.getElementById('facebook');
 const contactEmail = document.getElementById('contactEmail');
+
+// ✅ الحقول الجديدة
+const unit = document.getElementById('unit');
+const externalLink = document.getElementById('externalLink');
+
 const submitBtn = document.getElementById('submitBtn');
 const cancelBtn = document.getElementById('cancelBtn');
 const formTitle = document.getElementById('formTitle');
@@ -97,6 +102,7 @@ function renderTable(data) {
             <th>المنتج</th>
             <th>المتجر</th>
             <th>السعر</th>
+            <th>الوحدة</th>
             <th>الخصم</th>
             <th>الكمية</th>
             <th>الإجراءات</th>
@@ -107,7 +113,6 @@ function renderTable(data) {
     const tbody = document.createElement('tbody');
 
     data.forEach(p => {
-        // ✅ استخدم _id دائماً (MongoDB ObjectId)
         const productId = p._id;
 
         if (!productId) {
@@ -141,9 +146,13 @@ function renderTable(data) {
         const storeTd = document.createElement('td');
         storeTd.textContent = p.storeName || '-';
 
-        // ── السعر
+        // ── السعر مع الوحدة
         const priceTd = document.createElement('td');
-        priceTd.textContent = `${p.price} EGP`;
+        priceTd.textContent = `${p.price} ${p.unit || ''}`;
+
+        // ── الوحدة
+        const unitTd = document.createElement('td');
+        unitTd.textContent = p.unit || 'قطعة';
 
         // ── الخصم
         const discountTd = document.createElement('td');
@@ -156,10 +165,20 @@ function renderTable(data) {
         badge.textContent = isInStock ? `✅ ${p.stock}` : '❌ غير متوفر';
         stockTd.appendChild(badge);
 
-        // ── الإجراءات (event listeners بدل onclick inline)
+        // ── الإجراءات
         const actionsTd = document.createElement('td');
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'actions';
+
+        // ✅ زر الرابط الخارجي (جديد)
+        if (p.externalLink) {
+            const linkBtn = document.createElement('a');
+            linkBtn.href = p.externalLink;
+            linkBtn.target = '_blank';
+            linkBtn.className = 'btn btn-success btn-sm';
+            linkBtn.textContent = '🔗 رابط';
+            actionsDiv.appendChild(linkBtn);
+        }
 
         const editBtn = document.createElement('button');
         editBtn.className = 'btn btn-primary btn-sm';
@@ -179,6 +198,7 @@ function renderTable(data) {
         tr.appendChild(nameTd);
         tr.appendChild(storeTd);
         tr.appendChild(priceTd);
+        tr.appendChild(unitTd);
         tr.appendChild(discountTd);
         tr.appendChild(stockTd);
         tr.appendChild(actionsTd);
@@ -218,9 +238,14 @@ form.addEventListener('submit', async (e) => {
         discountPercentage: discount.value ? parseFloat(discount.value) : 0,
         category: category.value,
         storeName: storeName.value.trim(),
-        stock: parseInt(stock.value),
+        stock: parseFloat(stock.value), // ✅ parseFloat عشان يدعم الكسور
         image: image.value.trim(),
         description: description.value.trim(),
+        
+        // ✅ الحقول الجديدة
+        unit: unit.value,
+        externalLink: externalLink.value.trim() || null,
+        
         whatsapp_number: whatsapp.value.trim() || null,
         facebook_page: facebook.value.trim() || null,
         contact_email: contactEmail.value.trim() || null,
@@ -237,7 +262,6 @@ form.addEventListener('submit', async (e) => {
         let res;
 
         if (isEditing) {
-            // ✅ استخدم الـ _id المخزن في editId (ObjectId صحيح)
             const id = editId.value;
             res = await fetch(`${API_URL}/products/${id}`, {
                 method: 'PUT',
@@ -254,7 +278,6 @@ form.addEventListener('submit', async (e) => {
                 showToast(`❌ فشل التحديث: ${err.error}`, 'error');
             }
         } else {
-            // ✅ لا تبعت id إطلاقاً — MongoDB يعمله تلقائي
             res = await fetch(`${API_URL}/products`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -277,7 +300,6 @@ form.addEventListener('submit', async (e) => {
 
 // ─── Edit Product ──────────────────────────────────────────
 function editProduct(id) {
-    // ✅ ابحث بـ _id
     const product = products.find(p => p._id === id);
     if (!product) {
         showToast('❌ لم يتم العثور على المنتج', 'error');
@@ -285,7 +307,6 @@ function editProduct(id) {
     }
 
     isEditing = true;
-    // ✅ احفظ الـ _id (ObjectId) في الـ hidden input
     editId.value = product._id;
     name.value = product.name;
     price.value = product.price;
@@ -296,6 +317,11 @@ function editProduct(id) {
     stock.value = product.stock;
     image.value = product.image || '';
     description.value = product.description || '';
+    
+    // ✅ الحقول الجديدة
+    unit.value = product.unit || 'قطعة';
+    externalLink.value = product.externalLink || '';
+    
     whatsapp.value = product.whatsapp_number || '';
     facebook.value = product.facebook_page || '';
     contactEmail.value = product.contact_email || '';
@@ -314,6 +340,11 @@ function resetForm() {
     isEditing = false;
     form.reset();
     editId.value = '';
+    
+    // ✅ إعادة تعيين الحقول الجديدة للافتراضي
+    unit.value = 'قطعة';
+    externalLink.value = '';
+    
     formTitle.textContent = '➕ إضافة منتج جديد';
     submitBtn.textContent = '➕ إضافة المنتج';
     cancelBtn.style.display = 'none';
